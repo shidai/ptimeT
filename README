@@ -1,0 +1,12 @@
+
+Wideband pulsar timing; Derive the TOAs using freq-dependent templates.
+
+To compile: sh run.sh
+
+Usage: ptimeT -f fname -std tname (-pt tname) -o oname -single (-multi)
+
+	   fname: data file; tname: templates; oname: output .tim; 
+	   
+	   -std: standard template format; -pt: ptime template;
+
+	   -single: do freq-dependent matching and get one TOA; -multi: do freq-dependent matching and get TOAs for each channel.
