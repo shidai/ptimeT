@@ -126,7 +126,7 @@ int main (int argc, char *argv[])
 		printf ("psrfreq: %.15lf\n", psrfreq);
 	
 		double dm;
-		dm = readDm(name_psrparam);
+		dm = readDm(name_data);
 		printf ("DM: %.4lf\n", dm);
 	
 		////////////////////////////////////////////////

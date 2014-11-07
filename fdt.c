@@ -509,14 +509,14 @@ int get_toa (double *s, double *p, double *phasex, double *errphasex, double psr
 	// initial guess of the phase
 	int peak_s, peak_p;	
 
-	find_peak(nphase,s,&peak_s);
-	find_peak(nphase,p,&peak_p);
+	find_peak(0, nphase,s,&peak_s);
+	find_peak(0, nphase,p,&peak_p);
 
-	int d;
+	int d, chn;
 	double step;
 	double ini_phase,up_phase,low_phase;
 
-	d = InitialGuess (s, p, nphase, 1);
+	d = InitialGuess (s, p, nphase, 1, &chn);
 	//d=peak_p-peak_s;
 	//printf ("Initial guess: %d\n",d);
 	step=2.0*3.1415926/(10.0*nphase);
@@ -613,11 +613,11 @@ int get_toa_multi (char *name_data, char *name_predict, int h, double *s, double
 
 	preA7(s, p, nphase, nchn, &param);
 	
-	int d;
+	int d, chn;
 	double step;
 	double ini_phase,up_phase,low_phase;
 
-	d = InitialGuess (s, p, nphase, nchn);
+	d = InitialGuess (s, p, nphase, nchn, &chn);
 	//d = InitialGuess (st, pt, nphase, nchn);
 	//d=peak_p-peak_s;
 	//printf ("Initial guess: %d\n",d);
@@ -626,7 +626,14 @@ int get_toa_multi (char *name_data, char *name_predict, int h, double *s, double
 
 	if (d>=nphase/2)
 	{
-		ini_phase=2.0*3.1415926*(nphase-1-d)/nphase;
+		if (d>0)
+		{
+			ini_phase=2.0*3.1415926*(nphase-1-d)/nphase;
+		}
+		else
+		{
+			ini_phase=-2.0*3.1415926*(nphase-1+d)/nphase;
+		}
 		up_phase=ini_phase+step;
 		low_phase=ini_phase-step;
 		while (A7_multi(up_phase, param)*A7_multi(low_phase, param)>0.0)
@@ -648,6 +655,7 @@ int get_toa_multi (char *name_data, char *name_predict, int h, double *s, double
 		    low_phase-=step;
 		}
 	}
+	printf ("initial guess: %lf\n", ini_phase);
 
   // calculate phase shift, a and b
   double phase;
@@ -712,34 +720,55 @@ int getToaMultiDM (char *name_data, char *name_predict, int h, double *s, double
 	param.rms = rms;
 	param.psrFreq = psrfreq;
 	param.dm = dm;
+	param.freqRef = 1369.0;
 
 	preA7(s, p, nphase, nchn, &param);
 	
-	int d;
+	int d, chn;
 	double step;
 	double ini_phase,up_phase,low_phase;
 
-	d = InitialGuess (s, p, nphase, nchn);
-	//d = InitialGuess (st, pt, nphase, nchn);
+	d = InitialGuess (s, p, nphase, nchn, &chn);
+
+	//int peak_s, peak_p;	
+	//find_peak(chn, nphase,s,&peak_s);
+	//find_peak(chn, nphase,p,&peak_p);
+	//printf ("peak_s: %d\n", peak_s);
+	//printf ("peak_p: %d\n", peak_p);
 	//d=peak_p-peak_s;
+
 	//printf ("Initial guess: %d\n",d);
 	step=2.0*3.1415926/(10.0*nphase);
 	//step=2.0*3.1415926/10240.0;
 
-	if (d>=nphase/2)
+	d = d + (int)(nphase*(K*param.dm*param.psrFreq)*(1.0/(param.nfreq[chn]*param.nfreq[chn])-1.0/(param.freqRef*param.freqRef))/(2.0*3.1415926));
+	d = d - (int)(d/nphase)*nphase;
+	if (fabs(d)>=nphase/2)
 	{
-		ini_phase=2.0*3.1415926*(nphase-1-d)/nphase;
+		if (d>0)
+		{
+			ini_phase=2.0*3.1415926*(nphase-1-d)/nphase;
+		}
+		else
+		{
+			ini_phase=-2.0*3.1415926*(nphase-1+d)/nphase;
+		}
 	}
 	else
 	{
 		ini_phase=-2.0*3.1415926*d/nphase;
 	}
 
+	printf ("initial guess: %lf\n", ini_phase);
   // calculate phase shift, DM, a and b
   double phase, dmFit;
 	//printf ("fitDM: Initial guess %f\n",ini_phase);
-	miniseNelderMead (&param, ini_phase, &phase, &dmFit);
-	printf ("Phase shift: %.10lf; DM: %.4lf\n", phase, dmFit);
+	//miniseNelderMead (&param, ini_phase, &phase, &dmFit);
+	//miniseNelderMeadTest (&param, ini_phase, &phase, &dmFit);
+	miniseD (&param, ini_phase, &phase, &dmFit);
+	printf ("Phase shift: %.10lf; DM: %.4lf\n", ((phase/3.1415926)/(psrfreq*2.0))*1.0e+6, dmFit);
+
+	covariance (&param, phase, dmFit);
 
 	/*
 	double b[nchn];
@@ -1073,15 +1102,15 @@ int form_toa (char *name_data, char *name_predict, int subint, int chn, int nchn
 	return 0;
 }
 
-int find_peak (int n, double *s, int *position)
+int find_peak (int n0, int n, double *s, int *position)
 {
 	int i;
 	double temp[n];
 	double peak;
 
-	for (i = 0; i < n; i++)
+	for (i = n*n0; i < n*n0+n; i++)
 	{
-		temp[i] = s[i];
+		temp[i-n*n0] = s[i];
 	}
 
 	double a, b, c;
@@ -1097,7 +1126,7 @@ int find_peak (int n, double *s, int *position)
 	}
 	peak = temp[n-1];
 
-	for (i = 0; i < n; i++)
+	for (i = n*n0; i < n*n0+n; i++)
 	{
 		if (fabs(peak-s[i]) < 1.0e-3)
 		{
@@ -1185,7 +1214,7 @@ int corr (double *s, double *p, int nphase)
 	}
 
 	int shift;
-	find_peak (nphase, r,  &shift);
+	find_peak (0, nphase, r,  &shift);
 	/*
 	for (j = 0; j < 1024; j++)
 	{
@@ -1304,7 +1333,7 @@ int pre_diff (double *s, int nphase, int index, double frac_off, double *s_out)
 }
 
 
-int InitialGuess (double *s, double *p, int nphase, int nchn) 
+int InitialGuess (double *s, double *p, int nphase, int nchn, int *chn) 
 {
 	int index;
 	double frac_off = 0.05;  // set to be 0.05
@@ -1328,8 +1357,9 @@ int InitialGuess (double *s, double *p, int nphase, int nchn)
 	}
 
 	int peak;
-	find_peak (nchn, temp, &peak);
+	find_peak (0, nchn, temp, &peak);
 	//printf ("%d\n",peak);
+	(*chn) = peak;
 
 	double p_use[nphase];
 	double s_use[nphase];

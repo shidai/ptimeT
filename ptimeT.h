@@ -16,6 +16,7 @@
 typedef struct params {
 	int num; 
 	int nchn; 
+	double freqRef;
 	double psrFreq;
 	double dm;
 	double *nfreq;
@@ -96,7 +97,7 @@ int form_toa_multi (char *name_data, char *name_predict, int subint, int nchn, l
 int form_toa (char *name_data, char *name_predict, int subint, int chn, int nchn, long int imjd, long int smjd, double offs, double phase, double e_phase, long double *t, long double *e_dt, double *frequency);
 
 // initial guess
-int find_peak (int n, double *s, int *position);
+int find_peak (int n0, int n, double *s, int *position);
 
 double find_peak_value (int n, double *s);
 
@@ -110,7 +111,7 @@ int remove_baseline (double *in, int index, double frac_off, int n, double *out)
 
 int pre_diff (double *s, int nphase, int index, double frac_off, double *s_out);
 
-int InitialGuess (double *s, double *p, int nphase, int nchn);
+int InitialGuess (double *s, double *p, int nphase, int nchn, int *chn);
 
 int preA7_QUV (double *p, int nphase, int nchn, double *real_p, double *ima_p);
 
@@ -130,3 +131,10 @@ int miniseNelderMead (params *param, double guess, double *phase, double *dmFit)
 int getToaMultiDM (char *name_data, char *name_predict, int h, double *s, double *p, double *rms, int nchn, double *phasex, double *errphasex, double psrfreq, int nphase, double dm, double *freqout);
 
 double my_f (const gsl_vector *v, void *params);
+int miniseNelderMeadTest (params *param, double guess, double *phase, double *dmFit);
+double chiSquareTest (const gsl_vector *x, void *param);
+int covariance (void *param, double phase, double dm);
+double chiSquare2 (const gsl_vector *x, void *param);
+void dfChiSquare2 (const gsl_vector *x, void *param, gsl_vector *df);
+void fdfChiSquare2 (const gsl_vector *x, void *params, double *f, gsl_vector *df);
+int miniseD (params *param, double ini_guess, double *phase, double *dmFit);
