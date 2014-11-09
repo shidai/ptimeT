@@ -524,7 +524,15 @@ int get_toa (double *s, double *p, double *phasex, double *errphasex, double psr
 
 	if (d>=nphase/2)
 	{
-		ini_phase=2.0*3.1415926*(nphase-1-d)/nphase;
+		if (d>0)
+		{
+			ini_phase=2.0*3.1415926*(nphase-1-d)/nphase;
+		}
+		else
+		{
+			ini_phase=-2.0*3.1415926*(nphase-1+d)/nphase;
+		}
+		//ini_phase=2.0*3.1415926*(nphase-1-d)/nphase;
 		//ini_phase=2.0*3.1415926*(1023-d)/1024.0;
 		up_phase=ini_phase+step;
 		low_phase=ini_phase-step;
@@ -547,17 +555,17 @@ int get_toa (double *s, double *p, double *phasex, double *errphasex, double psr
 		}
 	}
 
-    // calculate phase shift, a and b
-    double phase,b;
-    phase=zbrent(A7, low_phase, up_phase, 1.0e-16, param);
-    //phase=zbrent(A7, -1.0, 1.0, 1.0e-16);
-    //phase=zbrent(A7, -0.005, 0.005, 1.0e-16);
-    b=A9(phase, param);
-    //a=A4(b);
+  // calculate phase shift, a and b
+  double phase,b;
+  phase=zbrent(A7, low_phase, up_phase, 1.0e-16, param);
+  //phase=zbrent(A7, -1.0, 1.0, 1.0e-16);
+  //phase=zbrent(A7, -0.005, 0.005, 1.0e-16);
+  b=A9(phase, param);
+  //a=A4(b);
 	(*bx) = b;
 
 		
-	//printf ("Phase shift: %.10lf\n", phase);
+	printf ("Phase shift: %.10lf\n", phase);
 	//printf ("%.10lf %.10lf\n", phase, A7(phase));
 	//printf ("%.10lf \n", ((phase/3.1415926)*5.75/2.0)*1.0e+3);  // microseconds
 	//printf ("%.10lf \n", b);
@@ -729,6 +737,7 @@ int getToaMultiDM (char *name_data, char *name_predict, int h, double *s, double
 	double ini_phase,up_phase,low_phase;
 
 	d = InitialGuess (s, p, nphase, nchn, &chn);
+	//printf ("chn: %d\n", chn);
 
 	//int peak_s, peak_p;	
 	//find_peak(chn, nphase,s,&peak_s);
@@ -741,8 +750,11 @@ int getToaMultiDM (char *name_data, char *name_predict, int h, double *s, double
 	step=2.0*3.1415926/(10.0*nphase);
 	//step=2.0*3.1415926/10240.0;
 
-	d = d + (int)(nphase*(K*param.dm*param.psrFreq)*(1.0/(param.nfreq[chn]*param.nfreq[chn])-1.0/(param.freqRef*param.freqRef))/(2.0*3.1415926));
+	//printf ("initial guess: %lf\n", (double)(d)/nphase);
+	//printf ("delay: %lf\n", nphase*(K*param.dm*param.psrFreq)*(1.0/(param.nfreq[chn]*param.nfreq[chn])-1.0/(param.freqRef*param.freqRef))/(2.0*3.1415926));
+	d = d - (int)(nphase*(K*param.dm*param.psrFreq)*(1.0/(param.nfreq[chn]*param.nfreq[chn])-1.0/(param.freqRef*param.freqRef))/(2.0*3.1415926));
 	d = d - (int)(d/nphase)*nphase;
+	//printf ("Initial guess: %d\n",d);
 	if (fabs(d)>=nphase/2)
 	{
 		if (d>0)
@@ -759,43 +771,32 @@ int getToaMultiDM (char *name_data, char *name_predict, int h, double *s, double
 		ini_phase=-2.0*3.1415926*d/nphase;
 	}
 
-	printf ("initial guess: %lf\n", ini_phase);
+	printf ("initial guess: %lf\n", ini_phase/(2*3.1415926));
   // calculate phase shift, DM, a and b
   double phase, dmFit;
 	//printf ("fitDM: Initial guess %f\n",ini_phase);
-	//miniseNelderMead (&param, ini_phase, &phase, &dmFit);
+	miniseNelderMead (&param, ini_phase, &phase, &dmFit);
+	//miniseD (&param, ini_phase, &phase, &dmFit);
+
+	// calculate the errors of phase and DM
+  double errphase, errDm;	
+	covariance (&param, phase, dmFit, &errphase, &errDm);
+
+	// test
 	//miniseNelderMeadTest (&param, ini_phase, &phase, &dmFit);
-	miniseD (&param, ini_phase, &phase, &dmFit);
-	printf ("Phase shift: %.10lf; DM: %.4lf\n", ((phase/3.1415926)/(psrfreq*2.0))*1.0e+6, dmFit);
+	//errphase = 0.01;
+	//errDm = 0.01;
 
-	covariance (&param, phase, dmFit);
-
-	/*
-	double b[nchn];
-	A9New (phase, param, b);
-
-		
-	//printf ("Phase shift: %.10lf\n", phase);
-	//printf ("%.10lf \n", ((phase/3.1415926)*5.75/2.0)*1.0e+3);  // microseconds
-	//printf ("%.10lf \n", b);
-	//printf ("%.10lf \n", a);
-	//printf ("///////////////////////// \n");
-		
-	
-	// calculate the errors of phase and b
-  double errphase;	
-
-	error_multi(phase, &errphase, param);
-	//error_multi(phase, &errphase, amp_s, amp_p, phi_s, phi_p, k, nchn, rms, bx);
 	printf ("multi-template\n");
-	printf ("Phase shift: %.10lf+-%.10lf\n", ((phase/3.1415926)/(psrfreq*2.0))*1.0e+6, ((errphase/3.1415926)/(psrfreq*2.0))*1.0e+6);  // microseconds
+	printf ("Phase shift: %.10lf+-%.10lf\n", phase, errphase);  // microseconds
+	//printf ("Phase shift: %.10lf+-%.10lf\n", ((phase/3.1415926)/(psrfreq*2.0))*1.0e+6, ((errphase/3.1415926)/(psrfreq*2.0))*1.0e+6);  // microseconds
+	printf ("DM: %.5lf+-%.5lf\n", dmFit, errDm);
 	//printf ("%.10lf %.10lf\n", ((phase/3.1415926)*4.569651/2.0)*1.0e+3, ((errphase/3.1415926)*4.569651/2.0)*1.0e+3);  // microseconds
 	//printf ("errphase %.10lf \n", ((errphase/3.1415926)*5.75/2.0)*1.0e+6);
 	//printf ("errb %.10lf \n", errb);
 	
 	(*phasex) = phase;
 	(*errphasex) = errphase;
-	*/
 
 	deallocateMemory (&param, nchn);
 

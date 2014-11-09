@@ -133,8 +133,9 @@ int getToaMultiDM (char *name_data, char *name_predict, int h, double *s, double
 double my_f (const gsl_vector *v, void *params);
 int miniseNelderMeadTest (params *param, double guess, double *phase, double *dmFit);
 double chiSquareTest (const gsl_vector *x, void *param);
-int covariance (void *param, double phase, double dm);
+int covariance (void *param, double phase, double dm, double *errPhase, double *errDm);
 double chiSquare2 (const gsl_vector *x, void *param);
 void dfChiSquare2 (const gsl_vector *x, void *param, gsl_vector *df);
 void fdfChiSquare2 (const gsl_vector *x, void *params, double *f, gsl_vector *df);
 int miniseD (params *param, double ini_guess, double *phase, double *dmFit);
+int errInvCov (double c00, double c11, double c01, double *err0, double *err1);

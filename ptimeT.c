@@ -33,10 +33,11 @@ int main (int argc, char *argv[])
 	char oname[128];   // name of output .tim
 	int mode; // to distinguish different type of templates
 	int tmode; // to distinguish different type of algorithm
+	int fitDM = 0; // fit DM or not; fitDM = 0, don't fit; fitDM = 1, fit
 
 	int index, n;
 	for (i=0;i<argc;i++)
-    {
+	{
 		if (strcmp(argv[i],"-f") == 0)
 		{
             index = i + 1;
@@ -72,7 +73,11 @@ int main (int argc, char *argv[])
 		{
 			tmode = 1; // do freq-dependent matching, and get TOA for each channel
 		}
-    }
+		else if (strcmp(argv[i],"-fitDM")==0)
+		{
+			fitDM = 1; // do freq-dependent matching, and get TOA for each channel
+		}
+	}
 
 	// name of different extension of data files
 	char name_data[50]; 
@@ -210,9 +215,14 @@ int main (int argc, char *argv[])
 			// if tmode == 0, do freq-dependent template matching, get one phase shift
 			if ( tmode == 0)
 			{
-				get_toa_multi (name_data, name_predict, h, s_multi, p_multi, rms, nchn, &phase, &e_phase, psrfreq, nphase, &frequency);
-				//get_toa_multi(s_multi, p_multi, rms, b, nchn, &phase, &e_phase, psrfreq, nphase);
-				getToaMultiDM (name_data, name_predict, h, s_multi, p_multi, rms, nchn, &phase, &e_phase, psrfreq, nphase, dm, &frequency);
+				if ( fitDM == 0 )
+				{
+					get_toa_multi (name_data, name_predict, h, s_multi, p_multi, rms, nchn, &phase, &e_phase, psrfreq, nphase, &frequency);
+				}
+				else
+				{
+					getToaMultiDM (name_data, name_predict, h, s_multi, p_multi, rms, nchn, &phase, &e_phase, psrfreq, nphase, dm, &frequency);
+				}
 
 				// transform phase shifts to MJD TOAs
 				form_toa_multi (name_data, name_predict, h, nchn, imjd, smjd, offs, phase, e_phase, &t, &e_dt, frequency);
