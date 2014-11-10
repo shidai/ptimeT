@@ -128,11 +128,11 @@ int main (int argc, char *argv[])
 	
 		double psrfreq;
 		psrfreq = read_psrfreq(name_psrparam);
-		printf ("psrfreq: %.15lf\n", psrfreq);
+		//printf ("psrfreq: %.15lf\n", psrfreq);
 	
 		double dm;
 		dm = readDm(name_data);
-		printf ("DM: %.4lf\n", dm);
+		printf ("DM0: %.4lf\n", dm);
 	
 		////////////////////////////////////////////////
 		long int imjd, smjd;

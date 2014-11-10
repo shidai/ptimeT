@@ -77,7 +77,7 @@ double chiSquare (const gsl_vector *x, void *param)
 		PS = 0.0;
 		S = 0.0;
 		//printf ("nchn freq: %lf\n",nfreq[i]);
-		phaseNchn = phase + (2.0*3.1415926)*(K*dm*psrFreq)*(1.0/(nfreq[i]*nfreq[i]));
+		phaseNchn = phase - (2.0*M_PI)*(K*dm*psrFreq)*(1.0/(nfreq[i]*nfreq[i]));
 		for (j = 0; j < num; j++)
 		{
 			PS += a_s[i][j]*a_p[i][j]*cos(p_s[i][j]-p_p[i][j]+(j+1)*phaseNchn);
@@ -157,7 +157,7 @@ int miniseNelderMead (params *param, double ini_guess, double *phase, double *dm
 			printf ("converged to minimum at\n");
 		}
 
-		//printf ("%5d %10.3e %10.3e f() = %7.3f size = %.6f\n", iter, gsl_vector_get (s->x, 0), gsl_vector_get (s->x, 1), s->fval, size);
+		//printf ("%5d %10.3e %10.3e f() = %7.3f size = %.6f\n", iter, gsl_vector_get (s->x, 0)/(3.1415926*2.0), gsl_vector_get (s->x, 1), s->fval, size);
 		(*phase) = gsl_vector_get (s->x, 0);
 		(*dmFit) = gsl_vector_get (s->x, 1);
 	}
@@ -220,6 +220,8 @@ int covariance (void *param, double phase, double dm, double *errPhase, double *
 	freqRef = sqrt(c00/(2.0*nu0));
 	*/
 
+	double A = 2.0*M_PI*K*psrFreq;
+	//printf ("A: %lf\n", A);
 	c00 = 0.0;
 	c11 = 0.0;
 	c01 = 0.0;
@@ -234,9 +236,9 @@ int covariance (void *param, double phase, double dm, double *errPhase, double *
 		c112 = 0.0;
 		c121 = 0.0;
 		//printf ("nchn freq: %lf\n",nfreq[i]);
-		//phaseNchn = phase + (K*dm*psrFreq)*(1.0/(nfreq[i]*nfreq[i]));
-		phaseNchn = phase + (2.0*3.1415926)*(K*dm*psrFreq)*(1.0/(nfreq[i]*nfreq[i])-1.0/(freqRef*freqRef));
-		printf ("phaseNchn: %lf %lf %lf\n", nfreq[i], phaseNchn, (K*dm*psrFreq)*(1.0/(nfreq[i]*nfreq[i])-1.0/(freqRef*freqRef)));
+		phaseNchn = phase - (A*dm)*(1.0/(nfreq[i]*nfreq[i])-1.0/(freqRef*freqRef));
+		//phaseNchn = phase - (2.0*3.1415926)*(K*dm*psrFreq)*(1.0/(nfreq[i]*nfreq[i])-1.0/(freqRef*freqRef));
+		//printf ("phaseNchn: %lf %lf\n", nfreq[i], phaseNchn);
 		//printf ("phaseNchn: %lf %.10lf\n", nfreq[i], (1.0/(nfreq[i]*nfreq[i])-1.0/(freqRef*freqRef)));
 		for (j = 0; j < num; j++)
 		{
@@ -245,10 +247,13 @@ int covariance (void *param, double phase, double dm, double *errPhase, double *
 			c002 += (j+1)*a_s[i][j]*a_p[i][j]*sin(p_s[i][j]-p_p[i][j]+(j+1)*phaseNchn);
 			c003 += (j+1)*(j+1)*a_s[i][j]*a_p[i][j]*cos(p_s[i][j]-p_p[i][j]+(j+1)*phaseNchn);
 
-			c111 += ((j+1)*K*psrFreq*(1.0/(nfreq[i]*nfreq[i])-1.0/(freqRef*freqRef)))*a_s[i][j]*a_p[i][j]*sin(p_s[i][j]-p_p[i][j]+(j+1)*phaseNchn);
-			c112 += pow(((j+1)*K*psrFreq*(1.0/(nfreq[i]*nfreq[i])-1.0/(freqRef*freqRef))),2.0)*a_s[i][j]*a_p[i][j]*cos(p_s[i][j]-p_p[i][j]+(j+1)*phaseNchn);
+			c111 += ((j+1)*A*(1.0/(nfreq[i]*nfreq[i])-1.0/(freqRef*freqRef)))*a_s[i][j]*a_p[i][j]*sin(p_s[i][j]-p_p[i][j]+(j+1)*phaseNchn);
+			//c111 += ((j+1)*K*psrFreq*(1.0/(nfreq[i]*nfreq[i])-1.0/(freqRef*freqRef)))*a_s[i][j]*a_p[i][j]*sin(p_s[i][j]-p_p[i][j]+(j+1)*phaseNchn);
+			c112 += pow(((j+1)*A*(1.0/(nfreq[i]*nfreq[i])-1.0/(freqRef*freqRef))),2.0)*a_s[i][j]*a_p[i][j]*cos(p_s[i][j]-p_p[i][j]+(j+1)*phaseNchn);
+			//c112 += pow(((j+1)*K*psrFreq*(1.0/(nfreq[i]*nfreq[i])-1.0/(freqRef*freqRef))),2.0)*a_s[i][j]*a_p[i][j]*cos(p_s[i][j]-p_p[i][j]+(j+1)*phaseNchn);
 
-			c121 += ((j+1)*(j+1)*K*psrFreq*(1.0/(nfreq[i]*nfreq[i])-1.0/(freqRef*freqRef)))*a_s[i][j]*a_p[i][j]*cos(p_s[i][j]-p_p[i][j]+(j+1)*phaseNchn);
+			c121 += ((j+1)*(j+1)*A*(1.0/(nfreq[i]*nfreq[i])-1.0/(freqRef*freqRef)))*a_s[i][j]*a_p[i][j]*cos(p_s[i][j]-p_p[i][j]+(j+1)*phaseNchn);
+			//c121 += ((j+1)*(j+1)*K*psrFreq*(1.0/(nfreq[i]*nfreq[i])-1.0/(freqRef*freqRef)))*a_s[i][j]*a_p[i][j]*cos(p_s[i][j]-p_p[i][j]+(j+1)*phaseNchn);
 		//printf ("%lf %lf\n", a_s[i], p_s[i]);
 		}
 		c00 += 2.0*((-c002*c002+c001*c003)/s)/(rms[i]*rms[i]);
@@ -257,6 +262,7 @@ int covariance (void *param, double phase, double dm, double *errPhase, double *
 		//nu0 += (1.0/(nfreq[i]*nfreq[i]))*((-c002*c002+c001*c003)/s)/(rms[i]*rms[i]);
 	}
 
+	printf ("c00: %lf; c11: %lf; c12: %lf\n", c00, c11, c01);
 	double err0, err1;
 	errInvCov (c00, c11, c01, &err0, &err1);
 	(*errPhase) = err0;
@@ -266,7 +272,6 @@ int covariance (void *param, double phase, double dm, double *errPhase, double *
 
 	//printf ("phase error: %lf; DM error: %lf\n",  ((err0/3.1415926)/(psrFreq*2.0))*1.0e+6, err1);
 	//printf ("phase error: %lf; DM error: %lf\n",  ((sqrt(2.0/fabs(c00))/3.1415926)/(psrFreq*2.0))*1.0e+6, sqrt(2.0/fabs(c11)));
-	//printf ("c00: %lf; c11: %lf; c12: %lf\n", c00, c11, c01);
 	//printf ("freqRef: %lf\n", freqRef);
 	
 	return 0;
@@ -275,8 +280,8 @@ int covariance (void *param, double phase, double dm, double *errPhase, double *
 double chiSquareTest (const gsl_vector *x, void *param)
 {
 	double phase = gsl_vector_get (x,0);
-	//double dm = ((params *)param)->dm;
-	double dm = -1.19761;
+	double dm = ((params *)param)->dm;
+	//double dm = 1.19761;
 
 	int nchn = ((params *)param)->nchn;
 	int num = ((params *)param)->num;
@@ -302,7 +307,7 @@ double chiSquareTest (const gsl_vector *x, void *param)
 		S = 0.0;
 		//phaseNchn = phase;
 		//phaseNchn = phase + (K*dm*psrFreq)*(1.0/(nfreq[i]*nfreq[i])-1.0/(nfreq[nchn/2]*nfreq[nchn/2]));
-		phaseNchn = phase + (2.0*3.1415926)*(K*dm*psrFreq)*(1.0/(nfreq[i]*nfreq[i])-1.0/(freqRef*freqRef));
+		phaseNchn = phase - (2.0*M_PI)*(K*dm*psrFreq)*(1.0/(nfreq[i]*nfreq[i])-1.0/(freqRef*freqRef));
 		for (j = 0; j < num; j++)
 		{
 			PS += a_s[i][j]*a_p[i][j]*cos(p_s[i][j]-p_p[i][j]+(j+1)*phaseNchn);
@@ -420,7 +425,7 @@ double chiSquare2 (const gsl_vector *x, void *param)
 		S = 0.0;
 		//printf ("nchn freq: %lf\n",nfreq[i]);
 		//phaseNchn = phase + (K*dm*psrFreq)*(1.0/(nfreq[i]*nfreq[i]));
-		phaseNchn = phase + (2.0*3.1415926)*(K*dm*psrFreq)*(1.0/(nfreq[i]*nfreq[i])-1.0/(freqRef*freqRef));
+		phaseNchn = phase - (2.0*M_PI)*(K*dm*psrFreq)*(1.0/(nfreq[i]*nfreq[i])-1.0/(freqRef*freqRef));
 		for (j = 0; j < num; j++)
 		{
 			PS += a_s[i][j]*a_p[i][j]*cos(p_s[i][j]-p_p[i][j]+(j+1)*phaseNchn);
@@ -470,7 +475,7 @@ void dfChiSquare2 (const gsl_vector *x, void *param, gsl_vector *df)
 		c11 = 0.0;
 		//printf ("nchn freq: %lf\n",nfreq[i]);
 		//phaseNchn = phase + (K*dm*psrFreq)*(1.0/(nfreq[i]*nfreq[i]));
-		phaseNchn = phase + (K*dm*psrFreq)*(1.0/(nfreq[i]*nfreq[i])-1.0/(freqRef*freqRef));
+		phaseNchn = phase - (2.0*M_PI)*(K*dm*psrFreq)*(1.0/(nfreq[i]*nfreq[i])-1.0/(freqRef*freqRef));
 		for (j = 0; j < num; j++)
 		{
 			s += a_s[i][j]*a_s[i][j];
@@ -525,7 +530,7 @@ int miniseD (params *param, double ini_guess, double *phase, double *dmFit)
 	guess = ini_guess;
 	dmGuess = param->dm;
 	//dmGuess = 0.0;
-	printf ("phase guess: %.10lf(%.10lf); DM guess: %.5lf\n", ((guess/3.1415926)/(psrFreq*2.0))*1.0e+6, guess, dmGuess);	
+	//printf ("phase guess: %.10lf(%.10lf); DM guess: %.5lf\n", ((guess/3.1415926)/(psrFreq*2.0))*1.0e+6, guess, dmGuess);	
 
 	x = gsl_vector_alloc (2);
 	gsl_vector_set (x, 0, guess);
@@ -547,7 +552,7 @@ int miniseD (params *param, double ini_guess, double *phase, double *dmFit)
 		status = gsl_multimin_test_gradient (s->gradient, 1e-3);
 		if (status == GSL_SUCCESS)
 			printf ("Minimum found at:\n");
-		printf ("%5d %.5f %.5f %10.5f\n", iter, gsl_vector_get (s->x, 0), gsl_vector_get (s->x, 1), s->f);
+		printf ("%5d %.5f %.5f %10.5f\n", iter, gsl_vector_get (s->x, 0)/(3.1415926*2.0), gsl_vector_get (s->x, 1), s->f);
 		(*phase) = gsl_vector_get (s->x, 0);
 		(*dmFit) = gsl_vector_get (s->x, 1);
 	}
@@ -573,7 +578,7 @@ int errInvCov (double c00, double c11, double c01, double *err0, double *err1)
 
 	gsl_linalg_LU_invert (&m.matrix, p, inverse);
 
-	//printf ("Covariance Matrix --> c00: %lf; c11: %lf\n", gsl_matrix_get(inverse, 0, 0), gsl_matrix_get(inverse, 1, 1));
+	printf ("Covariance Matrix --> c00: %.15lf; c11: %.15lf\n", gsl_matrix_get(inverse, 0, 0), gsl_matrix_get(inverse, 1, 1));
 	(*err0) = sqrt(2*fabs(gsl_matrix_get(inverse, 0, 0)));
 	(*err1) = sqrt(2*fabs(gsl_matrix_get(inverse, 1, 1)));
 

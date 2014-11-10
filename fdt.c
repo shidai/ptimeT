@@ -14,7 +14,6 @@
 #define EPS 1.0e-16 // Machine double floating-point precision.
 //#define EPS 3.0e-8 // Machine floating-point precision.
 #define SIGN(a,b) ((b) >= 0.0 ? fabs(a) : -fabs(a))
-double pi=3.1415926;
 
 double A7 (double phase, params param)
 //double A7 (double phase, double a_s[][NP], double a_p[][NP], double p_s[][NP], double p_p[][NP], int num, int nchn)
@@ -519,21 +518,18 @@ int get_toa (double *s, double *p, double *phasex, double *errphasex, double psr
 	d = InitialGuess (s, p, nphase, 1, &chn);
 	//d=peak_p-peak_s;
 	//printf ("Initial guess: %d\n",d);
-	step=2.0*3.1415926/(10.0*nphase);
-	//step=2.0*3.1415926/10240.0;
+	step=2.0*M_PI/(10.0*nphase);
 
 	if (d>=nphase/2)
 	{
 		if (d>0)
 		{
-			ini_phase=2.0*3.1415926*(nphase-1-d)/nphase;
+			ini_phase=2.0*M_PI*(nphase-1-d)/nphase;
 		}
 		else
 		{
-			ini_phase=-2.0*3.1415926*(nphase-1+d)/nphase;
+			ini_phase=-2.0*M_PI*(nphase-1+d)/nphase;
 		}
-		//ini_phase=2.0*3.1415926*(nphase-1-d)/nphase;
-		//ini_phase=2.0*3.1415926*(1023-d)/1024.0;
 		up_phase=ini_phase+step;
 		low_phase=ini_phase-step;
 		while (A7(up_phase, param)*A7(low_phase, param)>0.0)
@@ -544,8 +540,7 @@ int get_toa (double *s, double *p, double *phasex, double *errphasex, double psr
 	}
 	else
 	{
-		ini_phase=-2.0*3.1415926*d/nphase;
-		//ini_phase=-2.0*3.1415926*d/1024.0;
+		ini_phase=-2.0*M_PI*d/nphase;
 		up_phase=ini_phase+step;
 		low_phase=ini_phase-step;
 		while (A7(up_phase, param)*A7(low_phase, param)>0.0)
@@ -565,7 +560,7 @@ int get_toa (double *s, double *p, double *phasex, double *errphasex, double psr
 	(*bx) = b;
 
 		
-	printf ("Phase shift: %.10lf\n", phase);
+	//printf ("Phase shift: %.10lf\n", phase);
 	//printf ("%.10lf %.10lf\n", phase, A7(phase));
 	//printf ("%.10lf \n", ((phase/3.1415926)*5.75/2.0)*1.0e+3);  // microseconds
 	//printf ("%.10lf \n", b);
@@ -629,18 +624,17 @@ int get_toa_multi (char *name_data, char *name_predict, int h, double *s, double
 	//d = InitialGuess (st, pt, nphase, nchn);
 	//d=peak_p-peak_s;
 	//printf ("Initial guess: %d\n",d);
-	step=2.0*3.1415926/(10.0*nphase);
-	//step=2.0*3.1415926/10240.0;
+	step=2.0*M_PI/(10.0*nphase);
 
 	if (d>=nphase/2)
 	{
 		if (d>0)
 		{
-			ini_phase=2.0*3.1415926*(nphase-1-d)/nphase;
+			ini_phase=2.0*M_PI*(nphase-1-d)/nphase;
 		}
 		else
 		{
-			ini_phase=-2.0*3.1415926*(nphase-1+d)/nphase;
+			ini_phase=-2.0*M_PI*(nphase-1+d)/nphase;
 		}
 		up_phase=ini_phase+step;
 		low_phase=ini_phase-step;
@@ -653,7 +647,7 @@ int get_toa_multi (char *name_data, char *name_predict, int h, double *s, double
 	}
 	else
 	{
-		ini_phase=-2.0*3.1415926*d/nphase;
+		ini_phase=-2.0*M_PI*d/nphase;
 		up_phase=ini_phase+step;
 		low_phase=ini_phase-step;
 		while (A7_multi(up_phase, param)*A7_multi(low_phase, param)>0.0)
@@ -686,7 +680,7 @@ int get_toa_multi (char *name_data, char *name_predict, int h, double *s, double
 	error_multi(phase, &errphase, param);
 	//error_multi(phase, &errphase, amp_s, amp_p, phi_s, phi_p, k, nchn, rms, bx);
 	printf ("multi-template\n");
-	printf ("Phase shift: %.10lf+-%.10lf\n", ((phase/3.1415926)/(psrfreq*2.0))*1.0e+6, ((errphase/3.1415926)/(psrfreq*2.0))*1.0e+6);  // microseconds
+	printf ("Phase shift: %.10lf+-%.10lf\n", ((phase/M_PI)/(psrfreq*2.0))*1.0e+6, ((errphase/M_PI)/(psrfreq*2.0))*1.0e+6);  // microseconds
 	//printf ("%.10lf %.10lf\n", ((phase/3.1415926)*4.569651/2.0)*1.0e+3, ((errphase/3.1415926)*4.569651/2.0)*1.0e+3);  // microseconds
 	//printf ("errphase %.10lf \n", ((errphase/3.1415926)*5.75/2.0)*1.0e+6);
 	//printf ("errb %.10lf \n", errb);
@@ -747,36 +741,35 @@ int getToaMultiDM (char *name_data, char *name_predict, int h, double *s, double
 	//d=peak_p-peak_s;
 
 	//printf ("Initial guess: %d\n",d);
-	step=2.0*3.1415926/(10.0*nphase);
-	//step=2.0*3.1415926/10240.0;
+	step=2.0*M_PI/(10.0*nphase);
 
 	//printf ("initial guess: %lf\n", (double)(d)/nphase);
 	//printf ("delay: %lf\n", nphase*(K*param.dm*param.psrFreq)*(1.0/(param.nfreq[chn]*param.nfreq[chn])-1.0/(param.freqRef*param.freqRef))/(2.0*3.1415926));
-	d = d - (int)(nphase*(K*param.dm*param.psrFreq)*(1.0/(param.nfreq[chn]*param.nfreq[chn])-1.0/(param.freqRef*param.freqRef))/(2.0*3.1415926));
+	d = d - (int)(nphase*(K*param.dm*param.psrFreq)*(1.0/(param.nfreq[chn]*param.nfreq[chn])-1.0/(param.freqRef*param.freqRef)));
 	d = d - (int)(d/nphase)*nphase;
 	//printf ("Initial guess: %d\n",d);
 	if (fabs(d)>=nphase/2)
 	{
 		if (d>0)
 		{
-			ini_phase=2.0*3.1415926*(nphase-1-d)/nphase;
+			ini_phase=2.0*M_PI*(nphase-1-d)/nphase;
 		}
 		else
 		{
-			ini_phase=-2.0*3.1415926*(nphase-1+d)/nphase;
+			ini_phase=-2.0*M_PI*(nphase-1+d)/nphase;
 		}
 	}
 	else
 	{
-		ini_phase=-2.0*3.1415926*d/nphase;
+		ini_phase=-2.0*M_PI*d/nphase;
 	}
 
-	printf ("initial guess: %lf\n", ini_phase/(2*3.1415926));
+	//printf ("initial guess: %lf\n", ini_phase/(2*M_PI));
   // calculate phase shift, DM, a and b
   double phase, dmFit;
 	//printf ("fitDM: Initial guess %f\n",ini_phase);
-	miniseNelderMead (&param, ini_phase, &phase, &dmFit);
-	//miniseD (&param, ini_phase, &phase, &dmFit);
+	//miniseNelderMead (&param, ini_phase, &phase, &dmFit);
+	miniseD (&param, ini_phase, &phase, &dmFit);
 
 	// calculate the errors of phase and DM
   double errphase, errDm;	
@@ -788,7 +781,7 @@ int getToaMultiDM (char *name_data, char *name_predict, int h, double *s, double
 	//errDm = 0.01;
 
 	printf ("multi-template\n");
-	printf ("Phase shift: %.10lf+-%.10lf\n", phase, errphase);  // microseconds
+	//printf ("Phase shift: %.10lf+-%.10lf\n", phase, errphase);  // microseconds
 	//printf ("Phase shift: %.10lf+-%.10lf\n", ((phase/3.1415926)/(psrfreq*2.0))*1.0e+6, ((errphase/3.1415926)/(psrfreq*2.0))*1.0e+6);  // microseconds
 	printf ("DM: %.5lf+-%.5lf\n", dmFit, errDm);
 	//printf ("%.10lf %.10lf\n", ((phase/3.1415926)*4.569651/2.0)*1.0e+3, ((errphase/3.1415926)*4.569651/2.0)*1.0e+3);  // microseconds
@@ -1026,10 +1019,10 @@ int form_toa_multi (char *name_data, char *name_predict, int subint, int nchn, l
     //printf ("Period is %.15lf\n", period);
 	
 	// transform phase shift to time shift
-    //dt = (phase/PI)*period/2.0;
-    //e_dt = (e_phase/PI)*period/2.0;
-    dt = ((long double)(phase)/PI)*((long double)(period))/2.0L;
-    (*e_dt) = ((long double)(e_phase)/PI)*((long double)(period))/2.0L;
+    //dt = (phase/M_PI)*period/2.0;
+    //e_dt = (e_phase/M_PI)*period/2.0;
+    dt = ((long double)(phase)/M_PI)*((long double)(period))/2.0L;
+    (*e_dt) = ((long double)(e_phase)/M_PI)*((long double)(period))/2.0L;
     //printf ("dt is %.10Lf +/- %.10Lf\n", dt, e_dt);
 
 	// calculate the TOA
@@ -1087,10 +1080,10 @@ int form_toa (char *name_data, char *name_predict, int subint, int chn, int nchn
     printf ("Period is %.15lf\n", period);
 	
 	// transform phase shift to time shift
-    //dt = (phase/PI)*period/2.0;
-    //e_dt = (e_phase/PI)*period/2.0;
-    dt = ((long double)(phase)/PI)*((long double)(period))/2.0L;
-    (*e_dt) = ((long double)(e_phase)/PI)*((long double)(period))/2.0L;
+    //dt = (phase/M_PI)*period/2.0;
+    //e_dt = (e_phase/M_PI)*period/2.0;
+    dt = ((long double)(phase)/M_PI)*((long double)(period))/2.0L;
+    (*e_dt) = ((long double)(e_phase)/M_PI)*((long double)(period))/2.0L;
     printf ("dt is %.10Lf +/- %.10Lf\n", dt, e_dt);
 
 	// calculate the TOA
@@ -1455,10 +1448,10 @@ int rotate (int N, double *real_p, double *real_p_rotate, double *ima_p, double 
 		sina=ima_p[i]/amp;
 
 		// rotate profile
-		real_p_rotate[i]=amp*(cosina*cos(-i*rot*pi)-sina*sin(-i*rot*pi));
-		ima_p_rotate[i]=amp*(sina*cos(-i*rot*pi)+cosina*sin(-i*rot*pi));
-		//real_p_rotate[i]=amp*(cosina*cos(-i*pi)-sina*sin(-i*pi));
-		//ima_p_rotate[i]=amp*(sina*cos(-i*pi)+cosina*sin(-i*pi));
+		real_p_rotate[i]=amp*(cosina*cos(-i*rot*M_PI)-sina*sin(-i*rot*M_PI));
+		ima_p_rotate[i]=amp*(sina*cos(-i*rot*M_PI)+cosina*sin(-i*rot*M_PI));
+		//real_p_rotate[i]=amp*(cosina*cos(-i*M_PI)-sina*sin(-i*M_PI));
+		//ima_p_rotate[i]=amp*(sina*cos(-i*M_PI)+cosina*sin(-i*M_PI));
 		
 	}
 
@@ -1486,8 +1479,8 @@ int align (int N, double phase, double b, double a, double *real_p, double *real
 		//ima_p_align[i]=amp*(sina*cos(-i*phase)+cosina*sin(-i*phase));
 		//real_p_align[i]=amp*(cosina*cos(-i*phase)-sina*sin(-i*phase))/b;
 		//ima_p_align[i]=amp*(sina*cos(-i*phase)+cosina*sin(-i*phase))/b;
-		real_p_align[i]=(amp*(cosina*cos(-i*(phase+rotate*pi))-sina*sin(-i*(phase+rotate*pi))))/b;
-		ima_p_align[i]=(amp*(sina*cos(-i*(phase+rotate*pi))+cosina*sin(-i*(phase+rotate*pi))))/b;
+		real_p_align[i]=(amp*(cosina*cos(-i*(phase+rotate*M_PI))-sina*sin(-i*(phase+rotate*M_PI))))/b;
+		ima_p_align[i]=(amp*(sina*cos(-i*(phase+rotate*M_PI))+cosina*sin(-i*(phase+rotate*M_PI))))/b;
 		
 	}
 
