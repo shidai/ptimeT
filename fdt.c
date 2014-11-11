@@ -745,8 +745,8 @@ int getToaMultiDM (char *name_data, char *name_predict, int h, double *s, double
 
 	//printf ("initial guess: %lf\n", (double)(d)/nphase);
 	//printf ("delay: %lf\n", nphase*(K*param.dm*param.psrFreq)*(1.0/(param.nfreq[chn]*param.nfreq[chn])-1.0/(param.freqRef*param.freqRef))/(2.0*3.1415926));
-	d = d - (int)(nphase*(K*param.dm*param.psrFreq)*(1.0/(param.nfreq[chn]*param.nfreq[chn])-1.0/(param.freqRef*param.freqRef)));
-	d = d - (int)(d/nphase)*nphase;
+	//d = d - (int)(nphase*(K*param.dm*param.psrFreq)*(1.0/(param.nfreq[chn]*param.nfreq[chn])-1.0/(param.freqRef*param.freqRef)));
+	//d = d - (int)(d/nphase)*nphase;
 	//printf ("Initial guess: %d\n",d);
 	if (fabs(d)>=nphase/2)
 	{
@@ -768,8 +768,8 @@ int getToaMultiDM (char *name_data, char *name_predict, int h, double *s, double
   // calculate phase shift, DM, a and b
   double phase, dmFit;
 	//printf ("fitDM: Initial guess %f\n",ini_phase);
-	//miniseNelderMead (&param, ini_phase, &phase, &dmFit);
-	miniseD (&param, ini_phase, &phase, &dmFit);
+	miniseNelderMead (&param, ini_phase, &phase, &dmFit);
+	//miniseD (&param, ini_phase, &phase, &dmFit);
 
 	// calculate the errors of phase and DM
   double errphase, errDm;	
@@ -783,7 +783,7 @@ int getToaMultiDM (char *name_data, char *name_predict, int h, double *s, double
 	printf ("multi-template\n");
 	//printf ("Phase shift: %.10lf+-%.10lf\n", phase, errphase);  // microseconds
 	//printf ("Phase shift: %.10lf+-%.10lf\n", ((phase/3.1415926)/(psrfreq*2.0))*1.0e+6, ((errphase/3.1415926)/(psrfreq*2.0))*1.0e+6);  // microseconds
-	printf ("DM: %.5lf+-%.5lf\n", dmFit, errDm);
+	printf ("DM: %.10lf   %.10lf\n", dmFit, errDm);
 	//printf ("%.10lf %.10lf\n", ((phase/3.1415926)*4.569651/2.0)*1.0e+3, ((errphase/3.1415926)*4.569651/2.0)*1.0e+3);  // microseconds
 	//printf ("errphase %.10lf \n", ((errphase/3.1415926)*5.75/2.0)*1.0e+6);
 	//printf ("errb %.10lf \n", errb);

@@ -155,7 +155,9 @@ int main (int argc, char *argv[])
 		////////////////////////////////////////////////
 
 		// read a std
-		double s_multi[nphase*nchn*npol];
+		double *s_multi;
+		s_multi = (double *)malloc(sizeof(double)*nchn*npol*nphase);
+		//double s_multi[nphase*nchn*npol];
 		double s_temp[nphase];
 
 		//readfile(argv[1],&n,tt,s);
@@ -168,7 +170,9 @@ int main (int argc, char *argv[])
 
 		////////////////////////////////////////////////////////////////////////////////
 
-		double p_multi[nchn*npol*nphase];
+		double *p_multi;
+		p_multi = (double *)malloc(sizeof(double)*nchn*npol*nphase);
+		//double p_multi[nchn*npol*nphase];
 		double p_temp[nphase];
 
 		double rms[nchn];  // rms for each profile
@@ -230,10 +234,14 @@ int main (int argc, char *argv[])
 				fprintf (fp, "%s  %lf  %.15Lf  %Lf  7\n", fname, frequency, t, e_dt*1e+6);
 			}
 		}
+
+		free(p_multi);
+		free(s_multi);
+
 	}
 
-    if (fclose (fp) != 0)
+	if (fclose (fp) != 0)
 		fprintf (stderr, "Error closing\n");
-
+	
 	return 0;
 }

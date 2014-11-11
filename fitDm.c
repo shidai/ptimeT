@@ -77,7 +77,8 @@ double chiSquare (const gsl_vector *x, void *param)
 		PS = 0.0;
 		S = 0.0;
 		//printf ("nchn freq: %lf\n",nfreq[i]);
-		phaseNchn = phase - (2.0*M_PI)*(K*dm*psrFreq)*(1.0/(nfreq[i]*nfreq[i]));
+		phaseNchn = phase - (2.0*M_PI)*(K*dm*psrFreq)*(1.0/(nfreq[i]*nfreq[i])-1.0/(freqRef*freqRef));
+		//phaseNchn = phase - (2.0*M_PI)*(K*dm*psrFreq)*(1.0/(nfreq[i]*nfreq[i]));
 		for (j = 0; j < num; j++)
 		{
 			PS += a_s[i][j]*a_p[i][j]*cos(p_s[i][j]-p_p[i][j]+(j+1)*phaseNchn);
@@ -110,9 +111,9 @@ int miniseNelderMead (params *param, double ini_guess, double *phase, double *dm
 	double guess, dmGuess;
 	//guess = 0.88;
 	guess = ini_guess;
-	dmGuess = param->dm;
-	//dmGuess = 0.005;
-	printf ("phase guess: %.10lf(%.10lf); DM guess: %.5lf\n", (guess/(3.1415926*2.0)), guess, dmGuess);	
+	//dmGuess = param->dm;
+	dmGuess = 0.0;
+	//printf ("phase guess: %.10lf(%.10lf); DM guess: %.5lf\n", (guess/(3.1415926*2.0)), guess, dmGuess);	
 	//printf ("phase guess: %.10lf(%.10lf); DM guess: %.5lf\n", ((guess/3.1415926)/(psrFreq*2.0))*1.0e+6, guess, dmGuess);	
 
 	x = gsl_vector_alloc (2);
@@ -157,11 +158,11 @@ int miniseNelderMead (params *param, double ini_guess, double *phase, double *dm
 			printf ("converged to minimum at\n");
 		}
 
-		//printf ("%5d %10.3e %10.3e f() = %7.3f size = %.6f\n", iter, gsl_vector_get (s->x, 0)/(3.1415926*2.0), gsl_vector_get (s->x, 1), s->fval, size);
+		printf ("%5d %10.3e %10.3e f() = %7.3f size = %.6f\n", iter, gsl_vector_get (s->x, 0)/(3.1415926*2.0), gsl_vector_get (s->x, 1), s->fval, size);
 		(*phase) = gsl_vector_get (s->x, 0);
 		(*dmFit) = gsl_vector_get (s->x, 1);
 	}
-	while (status == GSL_CONTINUE && iter < 100);
+	while (status == GSL_CONTINUE && iter < 1000);
 
 	gsl_vector_free(x);
 	gsl_vector_free(ss);
@@ -539,7 +540,7 @@ int miniseD (params *param, double ini_guess, double *phase, double *dmFit)
 	
 	T = gsl_multimin_fdfminimizer_conjugate_fr;
 	s = gsl_multimin_fdfminimizer_alloc (T, 2);
-	gsl_multimin_fdfminimizer_set (s, &my_func, x, 0.001, 1e-6);
+	gsl_multimin_fdfminimizer_set (s, &my_func, x, 0.01, 1e-3);
 
 	printf ("Fit for phase shift and DM.\n");
 
@@ -547,6 +548,7 @@ int miniseD (params *param, double ini_guess, double *phase, double *dmFit)
 	{
 		iter++;
 		status = gsl_multimin_fdfminimizer_iterate (s);
+		printf ("Status: %d\n", status);
 		if (status)
 			break;
 		status = gsl_multimin_test_gradient (s->gradient, 1e-3);

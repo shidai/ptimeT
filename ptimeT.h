@@ -10,7 +10,8 @@
 #include <gsl/gsl_multimin.h>
 
 #define NP 2048
-#define K 4148.808
+#define K 4149.37759 // 1.0/2.41
+//#define K 4148.808
 
 typedef struct params {
 	int num; 
