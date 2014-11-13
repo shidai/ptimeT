@@ -158,7 +158,7 @@ int miniseNelderMead (params *param, double ini_guess, double *phase, double *dm
 			printf ("converged to minimum at\n");
 		}
 
-		printf ("%5d %10.3e %10.3e f() = %7.3f size = %.6f\n", iter, gsl_vector_get (s->x, 0)/(3.1415926*2.0), gsl_vector_get (s->x, 1), s->fval, size);
+		//printf ("%5d %10.3e %10.3e f() = %7.3f size = %.6f\n", iter, gsl_vector_get (s->x, 0)/(3.1415926*2.0), gsl_vector_get (s->x, 1), s->fval, size);
 		(*phase) = gsl_vector_get (s->x, 0);
 		(*dmFit) = gsl_vector_get (s->x, 1);
 	}

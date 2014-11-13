@@ -560,7 +560,7 @@ int get_toa (double *s, double *p, double *phasex, double *errphasex, double psr
 	(*bx) = b;
 
 		
-	//printf ("Phase shift: %.10lf\n", phase);
+	//printf ("Phase shift: %.10lf\n", phase/(2.0*M_PI));
 	//printf ("%.10lf %.10lf\n", phase, A7(phase));
 	//printf ("%.10lf \n", ((phase/3.1415926)*5.75/2.0)*1.0e+3);  // microseconds
 	//printf ("%.10lf \n", b);
