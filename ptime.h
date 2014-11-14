@@ -226,12 +226,14 @@ void readTemplate_ptime(char *file,tmplStruct *tmpl)
 	      //	    }
 						tmpl->channel[chan].nPolAllocated = nstokes;
 				}
+				/*
+				// not using group of Von Mises
 				else if (strcasecmp(firstword,"NCOMP:")==0)
 				{
 					int ncomp;
 					sscanf(line,"%s %d",dummy,&ncomp);
-					tmpl->channel[chan].pol[stokes].nComp = ncomp;
 					tmpl->channel[chan].pol[stokes].stokes = stokes;
+					tmpl->channel[chan].pol[stokes].nComp = ncomp;    
 					if (tmpl->channel[chan].pol[stokes].compMemoryAllocated==0)
 					{
 						if (!(tmpl->channel[chan].pol[stokes].comp = (component *)malloc(sizeof(component)*ncomp)))
@@ -252,6 +254,8 @@ void readTemplate_ptime(char *file,tmplStruct *tmpl)
 					tmpl->channel[chan].pol[stokes].allVm = nAllVm;
 					//printf ("%d\n",nAllVm);
 	      
+					tmpl->channel[chan].pol[stokes].nCompAllocated = nAllVm;
+
 					comp=0;
 					icomp=0;
 					ivm=0;
@@ -266,7 +270,7 @@ void readTemplate_ptime(char *file,tmplStruct *tmpl)
 					{
 						//printf ("%d\n",comp);
 						tmpl->channel[chan].pol[stokes].comp[comp].vmMemoryAllocated=0;
-						sscanf(line,"%s %d",dummy, &(tmpl->channel[chan].pol[stokes].comp[comp].nVm));
+						sscanf(line,"%s %d",dummy, &(tmpl->channel[chan].pol[stokes].comp[comp].nVm));   
 						//printf ("COMP%d has %d Von Mises functions\n",comp+1, tmpl->channel[chan].pol[stokes].comp[comp].nVm);
 						if (tmpl->channel[chan].pol[stokes].comp[comp].vmMemoryAllocated==0)
 						{
@@ -317,6 +321,70 @@ void readTemplate_ptime(char *file,tmplStruct *tmpl)
 						//&(tmpl->channel[chan].pol[stokes].comp[comp].concentration_err),
 						//&(tmpl->channel[chan].pol[stokes].comp[comp].centroid),
 						//&(tmpl->channel[chan].pol[stokes].comp[comp].centroid_err));
+					}
+				}
+				*/
+				// not using group of Von Mises
+				else if (strcasecmp(firstword,"NCOMP:")==0)
+				//else if (strcasecmp(firstword,"NVonMises:")==0)
+				{
+					int nAllVm, ncomp;
+					sscanf(line,"%s %d",dummy,&nAllVm);
+					ncomp = nAllVm;
+					tmpl->channel[chan].pol[stokes].allVm = nAllVm;
+					tmpl->channel[chan].pol[stokes].stokes = stokes;
+					tmpl->channel[chan].pol[stokes].nComp = ncomp;    
+
+					if (tmpl->channel[chan].pol[stokes].compMemoryAllocated==0)
+					{
+						if (!(tmpl->channel[chan].pol[stokes].comp = (component *)malloc(sizeof(component)*ncomp)))
+						{
+							printf("Error in allocated memory for components\n");
+							exit(1);
+						}
+		
+						tmpl->channel[chan].pol[stokes].compMemoryAllocated = 1;
+					}
+					tmpl->channel[chan].pol[stokes].nCompAllocated = ncomp;
+
+					for (comp = 0; comp < tmpl->channel[chan].pol[stokes].nComp; comp++)
+					{
+						tmpl->channel[chan].pol[stokes].comp[comp].vmMemoryAllocated=0;
+						tmpl->channel[chan].pol[stokes].comp[comp].nVm = 1;   
+
+						if (tmpl->channel[chan].pol[stokes].comp[comp].vmMemoryAllocated==0)
+						{
+							if (!(tmpl->channel[chan].pol[stokes].comp[comp].vonMises = (vMises *)malloc(sizeof(vMises)*tmpl->channel[chan].pol[stokes].comp[comp].nVm)))
+							{
+								printf("Error in allocated memory for components\n");
+								exit(1);
+							}
+							tmpl->channel[chan].pol[stokes].comp[comp].vmMemoryAllocated = 1;
+							//printf ("%d\n",tmpl->channel[chan].pol[stokes].comp[comp].vmMemoryAllocated);
+						}
+						tmpl->channel[chan].pol[stokes].comp[comp].nVmAllocated = tmpl->channel[chan].pol[stokes].comp[comp].nVm;
+					}
+
+					icomp=0;
+					ivm=0;
+				}
+				else // Look for each Von Mises 
+				{
+					char substr[4096];
+					strcpy(substr,firstword);
+					substr[4]='\0';
+	      
+					if (strcasecmp(substr,"COMP")==0)
+					{
+						sscanf(line,"%s %lf %lf %lf %lf %lf %lf",dummy,
+									&(tmpl->channel[chan].pol[stokes].comp[icomp].vonMises[ivm].height),
+									&(tmpl->channel[chan].pol[stokes].comp[icomp].vonMises[ivm].height_err),
+									&(tmpl->channel[chan].pol[stokes].comp[icomp].vonMises[ivm].concentration),
+									&(tmpl->channel[chan].pol[stokes].comp[icomp].vonMises[ivm].concentration_err),
+									&(tmpl->channel[chan].pol[stokes].comp[icomp].vonMises[ivm].centroid),
+									&(tmpl->channel[chan].pol[stokes].comp[icomp].vonMises[ivm].centroid_err));
+							//printf ("%d %d\n",ivm,icomp);
+						icomp++;
 					}
 				}
 			}
