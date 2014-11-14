@@ -9,7 +9,6 @@
 #include "ptimeT.h"
 #include "T2toolkit.h"
 #include "tempo2pred.h"
-#include "simulatePseudoBB.h"
 
 int main (int argc, char *argv[])
 {
@@ -185,11 +184,6 @@ int main (int argc, char *argv[])
 		// start to derive toa from different subint
 		for (h = 1; h <= nsub; h++)
 		{
-			// simulate data
-
-			//SNR = 500.0 + 200.0*i;
-			//simulate(n,SNR,s,p_temp);
-
 			// read profiles from data file
 			read_prof(name_data,h,p_multi,nphase);
 			//readfile(argv[2],&n,tt,p_multi);
