@@ -33,6 +33,7 @@ int main (int argc, char *argv[])
 	int mode; // to distinguish different type of templates
 	int tmode; // to distinguish different type of algorithm
 	int fitDM = 0; // fit DM or not; fitDM = 0, don't fit; fitDM = 1, fit
+	int nstokes;
 
 	int index, n;
 	for (i=0;i<argc;i++)
@@ -75,6 +76,22 @@ int main (int argc, char *argv[])
 		else if (strcmp(argv[i],"-fitDM")==0)
 		{
 			fitDM = 1; // do freq-dependent matching, and get TOA for each channel
+		}
+		else if (strcmp(argv[i],"-I")==0)
+		{
+			nstokes = 0; // do freq-dependent matching, and get TOA for each channel
+		}
+		else if (strcmp(argv[i],"-V")==0)
+		{
+			nstokes = 3; // do freq-dependent matching, and get TOA for each channel
+		}
+		else if (strcmp(argv[i],"-Q")==0)
+		{
+			nstokes = 1; // do freq-dependent matching, and get TOA for each channel
+		}
+		else if (strcmp(argv[i],"-U")==0)
+		{
+			nstokes = 2; // do freq-dependent matching, and get TOA for each channel
 		}
 	}
 
@@ -195,8 +212,27 @@ int main (int argc, char *argv[])
 				{
 					//printf ("%lf %lf\n", p_multi[j], s[j]);
 					//s_multi[i*nphase + j] = s[j];
-					p_temp[j] = p_multi[i*nphase + j];
-					s_temp[j] = s_multi[i*nphase + j];
+					if (nstokes == 0)
+					{
+						p_temp[j] = p_multi[nstokes*nchn*nphase + i*nphase + j];
+						s_temp[j] = s_multi[nstokes*nchn*nphase + i*nphase + j];
+					}
+					else if (nstokes == 1)
+					{
+						p_temp[j] = p_multi[nstokes*nchn*nphase + i*nphase + j];
+						s_temp[j] = s_multi[nstokes*nchn*nphase + i*nphase + j];
+					}
+					else if (nstokes == 2)
+					{
+						p_temp[j] = p_multi[nstokes*nchn*nphase + i*nphase + j];
+						s_temp[j] = s_multi[nstokes*nchn*nphase + i*nphase + j];
+					}
+					else if (nstokes == 3)
+					{
+						p_temp[j] = p_multi[nstokes*nchn*nphase + i*nphase + j];
+						s_temp[j] = s_multi[nstokes*nchn*nphase + i*nphase + j];
+					}
+					//s_temp[j] = s_multi[i*nphase + j];
 				}
 
 				// calculate toa, rms for each channel

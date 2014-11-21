@@ -962,24 +962,30 @@ int read_std ( char *name, int subint, double *profile, int nphase, int mode, in
 		readTemplate_ptime(name,&tmpl);
 	    //printf("Complete reading template\n");
 
-		int i,j;
+		int i,j,k;
 		double phi;
-		for (i = 0; i < tmpl.nchan; i++)
+		for (k = 0; k < tmpl.channel[0].nstokes; k++) // must be fixed; every channel has to have the same number of stokes
 		{
-			for (j = 0; j < nphase; j++)
-			{
-				phi = j/(double)nphase;
-				profile[i*nphase+j] = (double)evaluateTemplateChannel(&tmpl,phi,i,0,0);
-			}
-		}
-
-		if ( tmpl.nchan == 1 )
-		{
-			for (i = 1; i < nchn; i++)
+			for (i = 0; i < tmpl.nchan; i++)
 			{
 				for (j = 0; j < nphase; j++)
 				{
-					profile[i*nphase+j] = profile[j];
+					phi = j/(double)nphase;
+					profile[k*tmpl.nchan*nphase+i*nphase+j] = (double)evaluateTemplateChannel(&tmpl,phi,i,k,0);
+				}
+			}
+		}
+
+		for (k = 0; k < tmpl.channel[0].nstokes; k++)
+		{
+			if ( tmpl.nchan == 1 )
+			{
+				for (i = 1; i < nchn; i++)
+				{
+					for (j = 0; j < nphase; j++)
+					{
+						profile[k*tmpl.nchan*nphase+i*nphase+j] = profile[k*tmpl.nchan*nphase+j];
+					}
 				}
 			}
 		}
