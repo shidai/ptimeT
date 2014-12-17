@@ -3,7 +3,7 @@ Wideband pulsar timing; Derive the TOAs using freq-dependent templates.
 
 To compile: sh run.sh
 
-Usage: ptimeT -Stokes -f fname -std tname (-pt tname) -o oname -single (-multi)
+Usage: ptimeT -Stokes -f fname -std tname (-pt tname) -o oname -single (-multi) (-fitDM)
 
 		 Stokes: I, Q, U, V
 
@@ -12,3 +12,5 @@ Usage: ptimeT -Stokes -f fname -std tname (-pt tname) -o oname -single (-multi)
 	   -std: standard template format; -pt: ptime template;
 
 	   -single: do freq-dependent matching and get one TOA; -multi: do freq-dependent matching and get TOAs for each channel.
+		 
+		 -fitDM: fit DM simultaneously
