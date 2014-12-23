@@ -697,10 +697,11 @@ int getToaMultiDM (char *name_data, char *name_predict, int h, double *s, double
 //int get_toa_multi (double *s, double *p, double *rms, double *bx, int nchn, double *phasex, double *errphasex, double psrfreq, int nphase)
 {
 	// get the freq of the subint
-	double weight, frequency;
+	double weight, frequency, obsFreq;
 	double freq[nchn], wts[nchn];
 	read_freq(name_data, h, freq, nchn);
 	read_wts(name_data, h, wts, nchn);
+  obsFreq = read_obsFreq (name_data);
 	frequency = 0.0;
 	weight = 0.0;
 
@@ -722,7 +723,9 @@ int getToaMultiDM (char *name_data, char *name_predict, int h, double *s, double
 	param.rms = rms;
 	param.psrFreq = psrfreq;
 	param.dm = dm;
-	param.freqRef = 1369.0;
+	param.freqRef = obsFreq;
+	//param.freqRef = 1260.0;
+	printf ("obsFreq: %lf\n", param.freqRef);
 
 	preA7(s, p, nphase, nchn, &param);
 	

@@ -47,6 +47,7 @@ double read_offs ( char *name, int subint);
 int read_freq ( char *name, int subint, double *freq, int nchan );
 int read_wts ( char *name, int subint, double *wts, int nchan );
 
+double read_obsFreq (char *name);
 double read_psrfreq ( char *name );
 double readDm ( char *name );
 

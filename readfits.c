@@ -452,6 +452,40 @@ double read_offs ( char *name, int subint)
     return offs;
 }
 
+double read_obsFreq (char *name)
+//int main (int argc, char *argv[] )
+{  
+    fitsfile *fptr;       // pointer to the FITS file, defined in fitsio.h 
+    int status;
+    int colnum;
+
+    status = 0;
+
+    if ( fits_open_file(&fptr, name, READONLY, &status) )          // open the file
+    //if ( fits_open_file(&fptr, argv[1], READONLY, &status) )          // open the file
+    {
+        printf( "error while openning file\n" );
+    }
+
+		if (fits_movabs_hdu (fptr, 1, NULL, &status))
+    {
+        printf( "error moving hdu\n" );
+    }
+
+		double obsFreq;
+    if ( fits_read_key(fptr, TDOUBLE, (char *)"OBSFREQ", &obsFreq, NULL, &status) ) 
+    {
+        printf( "error while getting the npol number\n" );
+		}
+
+    if ( fits_close_file(fptr, &status) )
+    {
+        printf( " error while closing the file \n" );
+    }
+
+    return obsFreq;
+}
+
 //int main ( int argc, char *argv[] )
 int read_prof ( char *name, int subint, double *profile, int nphase)
 {  
